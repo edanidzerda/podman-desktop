@@ -189,6 +189,21 @@ test('if provider is set default one (on CLI) and the file does NOT exist, do no
   expect(fs.promises.writeFile).not.toHaveBeenCalled();
 });
 
+test('if provider is applehv and persistence is requested, write provider = "applehv" even though it is the default.', async () => {
+  vi.spyOn(fs.promises, 'writeFile').mockResolvedValue();
+  vi.spyOn(fs.promises, 'readFile').mockResolvedValue('');
+  vi.spyOn(podmanConfiguration, 'readContainersConfigFile').mockResolvedValue('');
+  vi.spyOn(fs, 'existsSync').mockReturnValue(false);
+
+  await podmanConfiguration.updateMachineProviderSettings(VMTYPE.APPLEHV, true);
+
+  expect(fs.promises.writeFile).toHaveBeenCalledWith(
+    podmanConfiguration.getContainersFileLocation(),
+    // should contain provider even though applehv is the default
+    expect.stringContaining('provider = "applehv"'),
+  );
+});
+
 test('doUpdateProxySettings should be called one at the time', async () => {
   const proxySettings: ProxySettings = {
     httpProxy: 'httpProxy',
